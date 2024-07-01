@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Select, { MultiValue } from "react-select";
 import { createTodo } from "../../Services/Api/ToDo";
 import "../../Assets/styles/CreateTodo.css";
-import { Label } from "../../Interfaces/todo.interface";
+import { Label } from "../../Interfaces/label.interface";
 
 interface CreateTodoProps {
   onClose: () => void;

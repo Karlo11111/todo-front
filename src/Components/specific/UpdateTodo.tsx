@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Select, { ActionMeta, MultiValue } from "react-select";
+import Select, { MultiValue } from "react-select";
 import { getLabels, updateTodo } from "../../Services/Api/ToDo";
 import "../../Assets/styles/CreateTodo.css";
-import { Label } from "../../Interfaces/todo.interface";
 
 interface UpdateTodoProps {
   todo: any;

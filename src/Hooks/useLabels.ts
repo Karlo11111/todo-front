@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Label } from "../Interfaces/todo.interface";
 import { createLabel, deleteLabel, getLabels } from "../Services/Api/ToDo";
-
+import { Label } from "../Interfaces/label.interface";
 
 export const useLabels = () => {
   const [labels, setLabels] = useState<Label[]>([]);

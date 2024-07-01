@@ -4,11 +4,12 @@ import {
   sortByReminder,
   deleteTodo,
   getTodosByLabel,
-} from "../../Services/Api/ToDo";
-import "../../Assets/styles/TodoList.css";
-import UpdateTodo from "./UpdateTodo";
-import Modal from "../common/Modal";
-import { Todo } from "../../Interfaces/todo.interface";
+  markTodoComplete,
+} from "../../../Services/Api/ToDo";
+import "../../../Assets/styles/TodoList.css";
+import UpdateTodo from "../UpdateTodo";
+import Modal from "../../common/Modal";
+import { Todo } from "../../../Interfaces/todo.interface";
 
 interface SortedTodoListProps {
   filterLabel: string;
@@ -26,6 +27,9 @@ const SortedTodoList: React.FC<SortedTodoListProps> = ({
   const [sortedTodos, setSortedTodos] = useState<Todo[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [checkedItems, setCheckedItems] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
@@ -71,6 +75,18 @@ const SortedTodoList: React.FC<SortedTodoListProps> = ({
     todo.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleCheckboxChange = async (id: string, checked: boolean) => {
+    setCheckedItems({ ...checkedItems, [id]: checked });
+    if (checked) {
+      // complete
+      await markTodoComplete(id, true);
+    } else {
+      // mark as incomplete
+      await markTodoComplete(id, false);
+    }
+    fetchSortedTodos();
+  };
+
   return (
     <div className="todo-list-container">
       <div className="todo-list">
@@ -86,6 +102,16 @@ const SortedTodoList: React.FC<SortedTodoListProps> = ({
               className="todo-item"
               onClick={() => handleUpdateClick(todo)}
             >
+              <input
+                type="checkbox"
+                className="todo-checkbox"
+                checked={todo.status === "complete"}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handleCheckboxChange(todo.id, e.target.checked);
+                }}
+              />
               <div className="todo-content">
                 <div className="todo-main">
                   <h2>{todo.title}</h2>

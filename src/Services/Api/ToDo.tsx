@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Todo } from "../../Interfaces/todo.interface";
+import Swal from "sweetalert2";
 
 const API_URL = "http://localhost:3333/api/todos";
 const LABELS_API_URL = "http://localhost:3333/api/labels";
@@ -46,17 +47,68 @@ export const getTodayTodos = async () => {
   return await axios.get(TODAY_TODOS_API_URL);
 };
 
-export const getRemindersWithin24Hours = (todos: Todo[]) => {
-  const now = new Date();
-  const endOfToday = new Date(now);
-  endOfToday.setHours(23, 59, 59, 999);
+export const markTodoComplete = async (id: string, complete: boolean) => {
+  try {
+    await axios.put(`${API_URL}/${id}`, {
+      status: complete ? "complete" : "incomplete",
+    });
+  } catch (error) {
+    console.error("Error updating todo status", error);
+    throw error; // Optionally, rethrow the error for further handling
+  }
+};
 
-  const endOfTomorrow = new Date(now);
-  endOfTomorrow.setDate(now.getDate() + 1);
-  endOfTomorrow.setHours(23, 59, 59, 999);
+export const getRemindersWithin24Hours = (todos: Todo[]) => {
+  const now = new Date().getTime();
+  const twentyFourHoursLater = now + 24 * 60 * 60 * 1000;
+  const twentyFourHoursBefore = now - 24 * 60 * 60 * 1000;
 
   return todos.filter((todo) => {
-    const reminderDate = new Date(todo.reminder);
-    return reminderDate > now && reminderDate <= endOfTomorrow;
+    const reminderTime = new Date(todo.reminder).getTime();
+    return (
+      reminderTime >= twentyFourHoursBefore &&
+      reminderTime <= twentyFourHoursLater
+    );
   });
+};
+
+export const showReminderAlerts = async (reminderTodos: Todo[]) => {
+  const todayEndTime = new Date();
+  todayEndTime.setHours(23, 59, 59, 999);
+
+  for (const todo of reminderTodos) {
+    let reminderTime = new Date(todo.reminder).getTime();
+    reminderTime -= 72000002;
+
+    // Calculate the end of today
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // Calculate tomorrow's date
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(23, 59, 59, 999);
+
+    // Determine if reminder is due today or within 24 hours
+    if (reminderTime < endOfToday.getTime()) {
+      await Swal.fire({
+        title: `Reminder: ${todo.title}`,
+        text: `Due today!`,
+        icon: "info",
+        confirmButtonText: "OK",
+      });
+    } else if (reminderTime <= tomorrow.getTime()) {
+      await Swal.fire({
+        title: `Reminder: ${todo.title}`,
+        text: `Due within 24 hours!`,
+        icon: "info",
+        confirmButtonText: "OK",
+      });
+    }
+  }
+};
+
+export const checkReminders = (todos: Todo[]) => {
+  const reminderTodos = getRemindersWithin24Hours(todos);
+  showReminderAlerts(reminderTodos);
 };

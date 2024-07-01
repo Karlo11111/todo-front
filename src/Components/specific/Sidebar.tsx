@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from "react";
 import "../../Assets/styles/Sidebar.css";
-import { Label } from "../../Interfaces/todo.interface";
+import { Label } from "../../Interfaces/label.interface";
 
 interface SidebarProps {
   upcomingClicked: boolean;
@@ -84,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }
               }}
             >
-              Today
+              Due Date Today
             </li>
           </ul>
         </div>

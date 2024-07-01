@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SketchPicker, BlockPicker } from "react-color";
+import { SketchPicker } from "react-color";
 
 interface CreateLabelFormProps {
   onSubmit: (name: string, color: string) => void;

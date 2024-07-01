@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { TodoList } from "./Components/specific/TodoList";
+import { TodoList } from "./Components/specific/TodoLists/TodoList";
 import Modal from "./Components/common/Modal";
 import CreateTodo from "./Components/specific/CreateToDo";
 import CreateLabelForm from "./Components/specific/CreateLabelForm";
-import SortedTodoList from "./Components/specific/SortedTodoList";
+import SortedTodoList from "./Components/specific/TodoLists/SortedTodoList";
 import Sidebar from "./Components/specific/Sidebar";
 import "./Assets/styles/App.css";
 import { useLabels } from "./Hooks/useLabels";
 import { useTodos } from "./Hooks/useTodos";
-import TodayTodoList from "./Components/specific/TodayTodoList";
+import TodayTodoList from "./Components/specific/TodoLists/TodayTodoList";
 
 const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

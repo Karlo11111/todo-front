@@ -1,58 +1,65 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import {
+  checkReminders,
   deleteTodo,
-  getTodayTodos,
+  getTodos,
   getTodosByLabel,
-} from "../../Services/Api/ToDo";
-import "../../Assets/styles/TodoList.css";
-import UpdateTodo from "./UpdateTodo";
-import Modal from "../common/Modal";
-import { Todo } from "../../Interfaces/todo.interface";
+  markTodoComplete,
+} from "../../../Services/Api/ToDo";
+import "../../../Assets/styles/TodoList.css";
+import UpdateTodo from "../UpdateTodo";
+import Modal from "../../common/Modal";
+import { Todo } from "../../../Interfaces/todo.interface";
 
-interface TodayTodoListInterface {
+interface TodoListProps {
   filterLabel: string;
-  onClose: () => void;
+  searchQuery: string; // searchQuery prop
   onOpenCreateModal: () => void;
-  searchQuery: string;
+  todos: Todo[];
 }
 
-const TodayTodoList: React.FC<TodayTodoListInterface> = ({
+export const TodoList: React.FC<TodoListProps> = ({
   filterLabel,
-  onClose,
-  onOpenCreateModal,
   searchQuery,
+  onOpenCreateModal,
+  todos: initialTodos,
 }) => {
-  const [sortedTodos, setSortedTodos] = useState<Todo[]>([]);
+  const [todos, setTodos] = useState<Todo[]>(initialTodos);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [checkedItems, setCheckedItems] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const openModal = () => setIsModalOpen(true);
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedTodo(null);
-  };
+  const closeModal = () => setIsModalOpen(false);
 
   useEffect(() => {
-    fetchSortedTodos();
+    fetchTodos();
   }, [filterLabel]);
 
-  const fetchSortedTodos = async () => {
+  useEffect(() => {
+    checkReminders(todos);
+  }, [todos]);
+
+  const fetchTodos = async () => {
     try {
-      let response;
-      if (filterLabel) {
-        const allLabelTodos = await getTodosByLabel(filterLabel);
-        response = {
-          data: allLabelTodos.data.filter((todo: Todo) =>
-            isToday(new Date(todo.dueDate))
-          ),
-        };
-      } else {
-        response = await getTodayTodos();
-      }
-      setSortedTodos(response.data);
+      const response = filterLabel
+        ? await getTodosByLabel(filterLabel)
+        : await getTodos();
+      setTodos(response.data);
     } catch (error) {
-      console.error("Error fetching sorted todos", error);
+      console.error("Error fetching todos", error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTodo(id);
+      fetchTodos();
+    } catch (e) {
+      console.error("Error deleting todo", e);
     }
   };
 
@@ -63,19 +70,19 @@ const TodayTodoList: React.FC<TodayTodoListInterface> = ({
 
   const handleUpdateClose = () => {
     setSelectedTodo(null);
-    fetchSortedTodos();
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteTodo(id);
-      fetchSortedTodos();
-    } catch (e) {
-      console.error("Error deleting todo", e);
+  const handleCheckboxChange = async (id: string, checked: boolean) => {
+    setCheckedItems({ ...checkedItems, [id]: checked });
+    if (checked) {
+      await markTodoComplete(id, true); // Mark as complete
+    } else {
+      await markTodoComplete(id, false); // Mark as incomplete
     }
+    fetchTodos(); // Refresh todos after update
   };
 
-  const filteredTodos = sortedTodos.filter((todo) =>
+  const filteredTodos = todos.filter((todo) =>
     todo.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -94,6 +101,16 @@ const TodayTodoList: React.FC<TodayTodoListInterface> = ({
               className="todo-item"
               onClick={() => handleUpdateClick(todo)}
             >
+              <input
+                type="checkbox"
+                className="todo-checkbox"
+                checked={todo.status === "complete"}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handleCheckboxChange(todo.id, e.target.checked);
+                }}
+              />
               <div className="todo-content">
                 <div className="todo-main">
                   <h2>{todo.title}</h2>
@@ -135,14 +152,3 @@ const TodayTodoList: React.FC<TodayTodoListInterface> = ({
     </div>
   );
 };
-
-const isToday = (date: Date) => {
-  const today = new Date();
-  return (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
-  );
-};
-
-export default TodayTodoList;
