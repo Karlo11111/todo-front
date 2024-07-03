@@ -2,10 +2,10 @@ import axios from "axios";
 import { Todo } from "../../Interfaces/todo.interface";
 import Swal from "sweetalert2";
 
-const API_URL = "https://13.53.175.241:3333/api/todos";
-const LABELS_API_URL = "https://13.53.175.241:3333/api/labels";
-const REMINDERS_API_URL = "https://13.53.175.241:3333/api/todos/reminders";
-const TODAY_TODOS_API_URL = "https://13.53.175.241:3333/api/todos/today";
+const API_URL = "http://13.53.175.241:3333/api/todos";
+const LABELS_API_URL = "http://13.53.175.241:3333/api/labels";
+const REMINDERS_API_URL = "http://13.53.175.241:3333/api/todos/reminders";
+const TODAY_TODOS_API_URL = "http://13.53.175.241:3333/api/todos/today";
 
 export const getTodos = async () => {
   return await axios.get(API_URL);
